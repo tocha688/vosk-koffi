@@ -31,4 +31,4 @@ big clusters.
 
 For installation instructions, examples and documentation visit [Vosk
 Website](https://alphacephei.com/vosk). See also our project on
-[Github](https://github.com/alphacep/vosk-api).
+[Github](https://github.com/tocha688/vosk-koffi).

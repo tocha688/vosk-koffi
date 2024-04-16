@@ -15,13 +15,13 @@
   ],
   "author": "tocha688",
   "license": "ISC",
-  "homepage": "https://github.com/JacobLinCool/recaptcha-solver#readme",
+  "homepage": "https://github.com/tocha688/vosk-koffi#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/JacobLinCool/recaptcha-solver.git"
+    "url": "git+https://github.com/tocha688/vosk-koffi.git"
   },
   "bugs": {
-    "url": "https://github.com/JacobLinCool/recaptcha-solver/issues"
+    "url": "https://github.com/tocha688/vosk-koffi/issues"
   },
   "dependencies": {
     "koffi": "^2.8.6"
