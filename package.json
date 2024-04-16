@@ -2,9 +2,11 @@
   "name": "vosk-koffi",
   "version": "1.0.2",
   "description": "Vosk node API based on Koffi.",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "format": "prettier --write '**/*.{js,ts,jsx,tsx,json,yml,yaml,md,html}' --ignore-path .gitignore",
+    "lint": "eslint ."
   },
   "keywords": [
     "vosk",
@@ -13,8 +15,15 @@
     "speech recognition",
     "wav to text"
   ],
+  "files": [
+    "dist",
+    "lib"
+  ],
   "author": "tocha688",
   "license": "MIT",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
   "homepage": "https://github.com/tocha688/vosk-koffi#readme",
   "repository": {
     "type": "git",
@@ -25,5 +34,10 @@
   },
   "dependencies": {
     "koffi": "^2.8.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "tsup": "^5.12.9",
+    "typescript": "^4.7.4"
   }
 }

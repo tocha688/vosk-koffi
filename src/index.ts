@@ -1,74 +1,113 @@
-const os = require('os');
-const path = require('path');
-/** @type {import('koffi')} */
-const koffi = require('koffi');
+import os from "node:os";
+import path from "node:path";
+import koffi from "koffi";
+
 
 
 koffi.opaque('VoskModel');
 koffi.opaque('VoskSpkModel');
 koffi.opaque('VoskRecognizer');
 
-/**
- * @typedef {Object} WordResult
- * @property {number} conf The confidence rate in the detection. 0 For unlikely, and 1 for totally accurate.
- * @property {number} start The start of the timeframe when the word is pronounced in seconds
- * @property {number} end The end of the timeframe when the word is pronounced in seconds
- * @property {string} word The word detected
- */
+
+type WordResult = {
+    /**
+     * The confidence rate in the detection. 0 For unlikely, and 1 for totally accurate.
+     */
+    conf: number,
+    /**
+     * The start of the timeframe when the word is pronounced in seconds
+     */
+    start: number,
+    /**
+     * The end of the timeframe when the word is pronounced in seconds
+     */
+    end: number,
+    /**
+     * The word detected
+     */
+    word: string
+}
+
+type RecognitionResults = {
+    /**
+     * Details about the words that have been detected
+     */
+    result: WordResult[],
+    /**
+     * The complete sentence that have been detected
+     */
+    text: string
+}
+
+
+type SpeakerResults = {
+    /**
+     * A floating vector representing speaker identity. It is usually about 128 numbers which uniquely represent speaker voice.
+     */
+    spk: number[],
+    /**
+     * The number of frames used to extract speaker vector. The more frames you have the more reliable is speaker vector.
+     */
+    spk_frames: number
+}
+
+
+type BaseRecognizerParam = {
+    /**
+     * The language model to be used 
+     */
+    model: Model,
+    /**
+     * The sample rate. Most models are trained at 16kHz
+     */
+    sampleRate: number,
+    speakerModel?: SpeakerModel,
+    grammar?:any
+}
+
+
+type GrammarRecognizerParam = {
+    /**
+     * The list of sentences to be recognized.
+     */
+    grammar: string[]
+}
+
+type SpeakerRecognizerParam = {
+    /**
+     * The SpeakerModel that will enable speaker identification
+     */
+    speakerModel: SpeakerModel
+}
+
+
+type Result<T extends SpeakerRecognizerParam | GrammarRecognizerParam> = T extends SpeakerRecognizerParam ? SpeakerResults & RecognitionResults : RecognitionResults;
+
+
+
+type PartialResults = {
+    /**
+     * The partial sentence that have been detected until now
+     */
+    partial: string
+}
 
 /**
- * @typedef {Object} RecognitionResults
- * @property {WordResult[]} result Details about the words that have been detected
- * @property {string} text The complete sentence that have been detected
+ * The list of strings to be recognized
  */
-
-/**
- * @typedef {Object} SpeakerResults
- * @property {number[]} spk A floating vector representing speaker identity. It is usually about 128 numbers which uniquely represent speaker voice.
- * @property {number} spk_frames The number of frames used to extract speaker vector. The more frames you have the more reliable is speaker vector.
- */
-
-/**
- * @typedef {Object} BaseRecognizerParam
- * @property {Model} model The language model to be used 
- * @property {number} sampleRate The sample rate. Most models are trained at 16kHz
- */
-
-/**
- * @typedef {Object} GrammarRecognizerParam
- * @property {string[]} grammar The list of sentences to be recognized.
- */
-
-/**
- * @typedef {Object} SpeakerRecognizerParam
- * @property {SpeakerModel} speakerModel The SpeakerModel that will enable speaker identification
- */
-
-/**
- * @template {SpeakerRecognizerParam | GrammarRecognizerParam} T
- * @typedef {T extends SpeakerRecognizerParam ? SpeakerResults & RecognitionResults : RecognitionResults} Result
- */
-
-/**
- * @typedef {Object} PartialResults
- * @property {string} partial The partial sentence that have been detected until now
- */
-
-/** @typedef {string[]} Grammar The list of strings to be recognized */
-
+type Grammar = string[];
 
 
 let soname;
 if (os.platform() == 'win32') {
     let currentPath = process.env.Path;
-    let dllDirectory = path.resolve(path.join(__dirname, "lib", "win-x86_64"));
+    let dllDirectory = path.resolve(path.join(__dirname, "../lib", "win-x86_64"));
     process.env.Path = dllDirectory + path.delimiter + currentPath;
-
-    soname = path.join(__dirname, "lib", "win-x86_64", "libvosk.dll")
+    soname = path.join(__dirname, "../lib", "win-x86_64", "libvosk.dll")
 } else if (os.platform() == 'darwin') {
-    soname = path.join(__dirname, "lib", "osx-universal", "libvosk.dylib")
+    soname = path.join(__dirname, "../lib", "osx-universal", "libvosk.dylib")
 } else {
-    soname = path.join(__dirname, "lib", "linux-x86_64", "libvosk.so")
+    soname = path.join(__dirname, "../lib", "linux-x86_64", "libvosk.so")
 }
 
 
@@ -99,7 +138,7 @@ const libvosk = {
  * Set log level for Kaldi messages
  * @param {number} level The higher, the more verbose. 0 for infos and errors. Less than 0 for silence. 
  */
-function setLogLevel(level) {
+export function setLogLevel(level: number) {
     libvosk.vosk_set_log_level(level);
 }
 
@@ -107,14 +146,15 @@ function setLogLevel(level) {
  * Build a Model from a model file.
  * @see models [models](https://alphacephei.com/vosk/models)
  */
-class Model {
+export class Model {
+    handle: any;
     /**
      * Build a Model to be used with the voice recognition. Each language should have it's own Model
      * for the speech recognition to work.
      * @param {string} modelPath The abstract pathname to the model
      * @see models [models](https://alphacephei.com/vosk/models)
      */
-    constructor(modelPath) {
+    constructor(modelPath: string) {
         /**
          * Store the handle.
          * For internal use only
@@ -140,14 +180,15 @@ class Model {
  * The Speaker Model enables speaker identification.
  * @see models [models](https://alphacephei.com/vosk/models)
  */
-class SpeakerModel {
+export class SpeakerModel {
+    handle: any;
     /**
      * Loads speaker model data from the file and returns the model object
      *
      * @param {string} modelPath the path of the model on the filesystem
      * @see models [models](https://alphacephei.com/vosk/models)
      */
-    constructor(modelPath) {
+    constructor(modelPath: string) {
         /**
          * Store the handle.
          * For internal use only
@@ -177,7 +218,7 @@ class SpeakerModel {
  * @param {Key} prop 
  * @returns {obj is Obj & Record<Key, unknown>}
  */
-function hasOwnProperty(obj, prop) {
+function hasOwnProperty(obj: Object, prop: string) {
     return obj.hasOwnProperty(prop)
 }
 
@@ -198,7 +239,8 @@ function hasOwnProperty(obj, prop) {
  * @template {XOR<SpeakerRecognizerParam, Partial<GrammarRecognizerParam>>} T extra parameter
  * @see Model
  */
-class Recognizer {
+export class Recognizer {
+    handle: unknown;
     /**
      * Create a Recognizer that will handle speech to text recognition.
      * @constructor
@@ -212,20 +254,15 @@ class Recognizer {
      *  Only recognizers with lookahead models support this type of quick configuration.
      *  Precompiled HCLG graph models are not supported.
      */
-    constructor(param) {
+    constructor(param: BaseRecognizerParam) {
         const { model, sampleRate } = param
         // Prevent the user to receive unpredictable results
         if (hasOwnProperty(param, 'speakerModel') && hasOwnProperty(param, 'grammar')) {
             throw new Error('grammar and speakerModel cannot be used together for now.')
         }
-        /**
-         * Store the handle.
-         * For internal use only
-         * @type {unknown}
-         */
-        this.handle = hasOwnProperty(param, 'speakerModel')
+        this.handle = param.speakerModel
             ? libvosk.vosk_recognizer_new_spk(model.handle, sampleRate, param.speakerModel.handle)
-            : hasOwnProperty(param, 'grammar')
+            : param.grammar
                 ? libvosk.vosk_recognizer_new_grm(model.handle, sampleRate, JSON.stringify(param.grammar))
                 : libvosk.vosk_recognizer_new(model.handle, sampleRate);
     }
@@ -254,7 +291,7 @@ class Recognizer {
      *
      * @param max_alternatives - maximum alternatives to return from recognition results
      */
-    setMaxAlternatives(max_alternatives) {
+    setMaxAlternatives(max_alternatives: number) {
         libvosk.vosk_recognizer_set_max_alternatives(this.handle, max_alternatives);
     }
 
@@ -291,12 +328,12 @@ class Recognizer {
      *
      * @param words - boolean value
      */
-    setWords(words) {
+    setWords(words: Boolean) {
         libvosk.vosk_recognizer_set_words(this.handle, Number(words));
     }
 
     /** Same as above, but for partial results*/
-    setPartialWords(partial_words) {
+    setPartialWords(partial_words: Boolean) {
         libvosk.vosk_recognizer_set_partial_words(this.handle, Number(partial_words));
     }
 
@@ -305,7 +342,7 @@ class Recognizer {
      *
      * @param spk_model Speaker recognition model
      */
-    setSpkModel(spk_model) {
+    setSpkModel(spk_model: Model) {
         libvosk.vosk_recognizer_set_spk_model(this.handle, spk_model.handle);
     }
 
@@ -317,8 +354,8 @@ class Recognizer {
      * @param {Buffer} data audio data in PCM 16-bit mono format
      * @returns true if silence is occured and you can retrieve a new utterance with result method
      */
-    acceptWaveform(data) {
-        return libvosk.vosk_recognizer_accept_waveform(this.handle, data, data.length);
+    acceptWaveform(data: Buffer): Boolean {
+        return !!libvosk.vosk_recognizer_accept_waveform(this.handle, data, data.length);
     };
 
     /** 
@@ -329,13 +366,13 @@ class Recognizer {
      * @param {Buffer} data audio data in PCM 16-bit mono format
      * @returns true if silence is occured and you can retrieve a new utterance with result method
      */
-    acceptWaveformAsync(data) {
+    acceptWaveformAsync(data: Buffer): Promise<Boolean> {
         return new Promise((resolve, reject) => {
-            libvosk.vosk_recognizer_accept_waveform.async(this.handle, data, data.length, function (err, result) {
+            libvosk.vosk_recognizer_accept_waveform.async(this.handle, data, data.length, function (err: any, result: boolean) {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(result);
+                    resolve(!!result);
                 }
             });
         });
@@ -378,15 +415,15 @@ class Recognizer {
      *  }
      * </pre>
      */
-    resultString() {
+    resultString(): string {
         return libvosk.vosk_recognizer_result(this.handle);
     };
 
     /**
      * Returns speech recognition results
-     * @returns {Result<T>} The results
+     * @returns {any} The results
      */
-    result() {
+    result(): any {
         return JSON.parse(libvosk.vosk_recognizer_result(this.handle));
     };
 
@@ -396,7 +433,7 @@ class Recognizer {
      * 
      * @returns {PartialResults} The partial results
      */
-    partialResult() {
+    partialResult(): PartialResults {
         return JSON.parse(libvosk.vosk_recognizer_partial_result(this.handle));
     };
 
@@ -405,9 +442,9 @@ class Recognizer {
      * You usually call it in the end of the stream to get final bits of audio. It
      * flushes the feature pipeline, so all remaining audio chunks got processed.
      *
-     * @returns {Result<T>} speech result.
+     * @returns {any} speech result.
      */
-    finalResult() {
+    finalResult(): any {
         return JSON.parse(libvosk.vosk_recognizer_final_result(this.handle));
     };
 
@@ -419,9 +456,4 @@ class Recognizer {
         libvosk.vosk_recognizer_reset(this.handle);
     }
 }
-
-exports.setLogLevel = setLogLevel
-exports.Model = Model
-exports.SpeakerModel = SpeakerModel
-exports.Recognizer = Recognizer
 
