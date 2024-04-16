@@ -457,3 +457,9 @@ export class Recognizer {
     }
 }
 
+export default {
+    setLogLevel,
+    Model,
+    SpeakerModel,
+    Recognizer
+}

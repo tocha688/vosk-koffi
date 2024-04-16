@@ -243,5 +243,11 @@ declare class Recognizer {
      */
     reset(): void;
 }
+declare const _default: {
+    setLogLevel: typeof setLogLevel;
+    Model: typeof Model;
+    SpeakerModel: typeof SpeakerModel;
+    Recognizer: typeof Recognizer;
+};
 
-export { Model, Recognizer, SpeakerModel, setLogLevel };
+export { Model, Recognizer, SpeakerModel, _default as default, setLogLevel };
