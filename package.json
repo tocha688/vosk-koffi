@@ -1,6 +1,6 @@
 {
   "name": "vosk-koffi",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Vosk node API based on Koffi.",
   "main": "index.js",
   "scripts": {
@@ -14,7 +14,7 @@
     "wav to text"
   ],
   "author": "tocha688",
-  "license": "ISC",
+  "license": "MIT",
   "homepage": "https://github.com/tocha688/vosk-koffi#readme",
   "repository": {
     "type": "git",

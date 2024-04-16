@@ -127,5 +127,4 @@ dist
 .pnp.*
 
 **/.DS_Store
-lib/
 model/
