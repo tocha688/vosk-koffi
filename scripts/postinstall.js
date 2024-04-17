@@ -3,6 +3,7 @@ const path = require("node:path");
 const os = require("node:os");
 const https = require("https");
 const yauzl = require("yauzl");
+const Downloader = require("nodejs-file-downloader");
 
 const ZIP_BASE = "https://github.com/alphacep/vosk-api/releases/download";
 
@@ -42,63 +43,19 @@ const LIB_DIR = path.resolve(__dirname, "..", `bin-${process.platform}-${process
         throw new Error(`Unsupported platform: ${process.platform}-${process.arch}`);
     }
 
-    const basename = path.basename(remote);
-    const zip = path.resolve(os.tmpdir(), basename);
-    await download(ZIP_BASE + remote, zip);
-    VERBOSE && console.log("Downloaded file to", zip);
+    // await download(ZIP_BASE + remote, zip);
+    const downloader = new Downloader({
+        url: ZIP_BASE + remote,
+        directory: LIB_DIR
+    });
+    const { filePath } = await downloader.download();
+    VERBOSE && console.log("Downloaded file to", filePath);
 
-    await unzip(zip, LIB_DIR);
-    fs.unlinkSync(zip);
+    await unzip(filePath, LIB_DIR);
+    fs.unlinkSync(filePath);
 })();
 
-/**
- * Download the file to the correct location.
- * @param {string} url The url of the file to download
- * @param {string} to The path to save the file to
- * @param {number} redirect The number of redirects to follow
- * @returns {Promise<string>} The path to the file
- */
-function download(url, to, redirect = 0) {
-    if (redirect === 0) {
-        VERBOSE && console.log(`Downloading ${url} to ${to}`);
-    } else {
-        VERBOSE && console.log(`Redirecting to ${url}`);
-    }
 
-    return new Promise((resolve, reject) => {
-        if (!fs.existsSync(path.dirname(to))) {
-            fs.mkdirSync(path.dirname(to), { recursive: true });
-        }
-
-        let done = true;
-        const file = fs.createWriteStream(to);
-        const request = https.get(url, (res) => {
-            if (res.statusCode === 302 && res.headers.location !== undefined) {
-                done = false;
-                file.close();
-                resolve(download(res.headers.location, to, redirect + 1));
-                return;
-            }
-            res.pipe(file);
-        });
-
-        file.on("finish", () => {
-            if (done) {
-                resolve(to);
-            }
-        });
-
-        request.on("error", (err) => {
-            fs.unlink(to, () => reject(err));
-        });
-
-        file.on("error", (err) => {
-            fs.unlink(to, () => reject(err));
-        });
-
-        request.end();
-    });
-}
 
 function unzip(zip, dest) {
     const dir = path.basename(zip, ".zip");

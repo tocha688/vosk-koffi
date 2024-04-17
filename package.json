@@ -1,6 +1,6 @@
 {
   "name": "vosk-koffi",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Vosk node API based on Koffi.",
   "scripts": {
     "dev": "tsup --watch",
@@ -43,7 +43,8 @@
     "url": "https://github.com/tocha688/vosk-koffi/issues"
   },
   "dependencies": {
-    "koffi": "^2.8.6"
+    "koffi": "^2.8.6",
+    "nodejs-file-downloader": "^4.12.1"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
