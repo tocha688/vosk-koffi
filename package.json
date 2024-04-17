@@ -1,29 +1,39 @@
 {
   "name": "vosk-koffi",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Vosk node API based on Koffi.",
   "scripts": {
     "dev": "tsup --watch",
     "build": "tsup",
     "format": "prettier --write '**/*.{js,ts,jsx,tsx,json,yml,yaml,md,html}' --ignore-path .gitignore",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "postinstall": "node scripts/postinstall.js"
   },
   "keywords": [
     "vosk",
     "speech recognition",
     "voice",
     "speech recognition",
-    "wav to text"
+    "wav to text",
+    "speech",
+    "recognition"
   ],
   "files": [
-    "dist",
-    "lib"
+    "lib",
+    "scripts"
   ],
   "author": "tocha688",
   "license": "MIT",
-  "main": "dist/index.js",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.ts",
+  "main": "lib/index.js",
+  "module": "lib/index.mjs",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.mjs",
+      "require": "./lib/index.js"
+    }
+  },
   "homepage": "https://github.com/tocha688/vosk-koffi#readme",
   "repository": {
     "type": "git",
@@ -38,6 +48,7 @@
   "devDependencies": {
     "@types/node": "^20.12.7",
     "tsup": "^5.12.9",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "yauzl": "^3.1.2"
   }
 }
