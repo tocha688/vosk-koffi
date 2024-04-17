@@ -112,13 +112,13 @@ export class Recognizer<T extends XOR<SpeakerRecognizerParam, Partial<GrammarRec
      * @param words - boolean value
      */
     public setWords(words: boolean): this {
-        libvosk.vosk_recognizer_set_words(this.handle, words);
+        libvosk.vosk_recognizer_set_words(this.handle, Number(words));
         return this;
     }
 
     /** Same as above, but for partial results */
     public setPartialWords(partial_words: boolean): this {
-        libvosk.vosk_recognizer_set_partial_words(this.handle, partial_words);
+        libvosk.vosk_recognizer_set_partial_words(this.handle, Number(partial_words));
         return this;
     }
 
@@ -141,7 +141,7 @@ export class Recognizer<T extends XOR<SpeakerRecognizerParam, Partial<GrammarRec
      * @returns true if silence is occured and you can retrieve a new utterance with result method
      */
     public acceptWaveform(data: Buffer): boolean {
-        return libvosk.vosk_recognizer_accept_waveform(
+        return !!libvosk.vosk_recognizer_accept_waveform(
             this.handle,
             data as any,
             data.length,
@@ -162,11 +162,11 @@ export class Recognizer<T extends XOR<SpeakerRecognizerParam, Partial<GrammarRec
                 this.handle,
                 data as any,
                 data.length,
-                function (err:Error, result:boolean) {
+                function (err:Error, result:number) {
                     if (err) {
                         reject(err);
                     } else {
-                        resolve(result);
+                        resolve(!!result);
                     }
                 },
             );
