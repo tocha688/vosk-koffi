@@ -2,7 +2,7 @@ import { defineConfig } from "tsup";
 
 export default defineConfig((options) => ({
     entry: ["src/index.ts"],
-    outDir: "dist",
+    outDir: "lib",
     target: "node12",
     format: ["cjs", "esm"],
     clean: true,

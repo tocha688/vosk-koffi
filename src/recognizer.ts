@@ -6,7 +6,6 @@ import {
     Result,
 } from "./types";
 import { libvosk, SpeakerModel } from "./model";
-import { Pointer } from "ref-napi";
 
 export type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
 export type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U;
@@ -17,7 +16,7 @@ export type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U,
  */
 export class Recognizer<T extends XOR<SpeakerRecognizerParam, Partial<GrammarRecognizerParam>>> {
     /** Store the handle. For internal use only */
-    private handle: Pointer<void>;
+    private handle: any;
 
     /**
      * Create a Recognizer that will handle speech to text recognition.
@@ -144,7 +143,7 @@ export class Recognizer<T extends XOR<SpeakerRecognizerParam, Partial<GrammarRec
     public acceptWaveform(data: Buffer): boolean {
         return libvosk.vosk_recognizer_accept_waveform(
             this.handle,
-            data as Pointer<unknown>,
+            data as any,
             data.length,
         );
     }
@@ -161,9 +160,9 @@ export class Recognizer<T extends XOR<SpeakerRecognizerParam, Partial<GrammarRec
         return new Promise((resolve, reject) => {
             libvosk.vosk_recognizer_accept_waveform.async(
                 this.handle,
-                data as Pointer<unknown>,
+                data as any,
                 data.length,
-                function (err, result) {
+                function (err:Error, result:boolean) {
                     if (err) {
                         reject(err);
                     } else {
