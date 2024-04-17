@@ -1,4 +1,4 @@
-This is an Koffi wrapper for the Vosk library.
+This is an Koffi wrapper for the Vosk library.No need to install any environment with a value of, just nodejs is needed, supporting workers.
 
 ## Usage
 
