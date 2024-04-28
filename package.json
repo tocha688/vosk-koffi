@@ -1,6 +1,6 @@
 {
   "name": "vosk-koffi",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Vosk node API based on Koffi.",
   "scripts": {
     "dev": "tsup --watch",
