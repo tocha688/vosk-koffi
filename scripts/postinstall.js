@@ -10,7 +10,7 @@ const ZIP_BASE = "https://github.com/alphacep/vosk-api/releases/download";
 
 const ZIP = {
   win32: {
-    x64: "/v0.3.42/vosk-win64-0.3.42.zip",
+    x64: "/v0.3.45/vosk-win64-0.3.45.zip",
     ia32: "/v0.3.42/vosk-win32-0.3.42.zip",
   },
   darwin: {
@@ -18,10 +18,11 @@ const ZIP = {
     x64: "/v0.3.42/vosk-osx-0.3.42.zip",
   },
   linux: {
-    arm64: "/v0.3.43/vosk-linux-aarch64-0.3.43.zip",
-    arm: "/v0.3.43/vosk-linux-armv7l-0.3.43.zip",
-    x64: "/v0.3.43/vosk-linux-x86_64-0.3.43.zip",
-    ia32: "/v0.3.43/vosk-linux-x86-0.3.43.zip",
+    arm64: "/v0.3.45/vosk-linux-aarch64-0.3.45.zip",
+    arm: "/v0.3.45/vosk-linux-armv7l-0.3.45.zip",
+    x64: "/v0.3.45/vosk-linux-x86_64-0.3.45.zip",
+    ia32: "/v0.3.45/vosk-linux-x86-0.3.45.zip",
+    riscv64: "/v0.3.45/vosk-linux-riscv64-0.3.45.zip",
   },
 };
 
@@ -57,7 +58,9 @@ const LIB_DIR = path.resolve(
           fs.mkdirSync(libDir, { recursive: true });
         }
 
-        if (fs.existsSync(path.resolve(libDir, "DONE"))) {
+        const version = path.basename(remote, ".zip").split('-').pop()
+
+        if (fs.existsSync(path.resolve(libDir, `DONE ${version}`))) {
           VERBOSE && console.log("Library already downloaded.");
           return;
         }
@@ -86,6 +89,7 @@ async function download(url, dest) {
 
 function unzip(zip, dest) {
   const dir = path.basename(zip, ".zip");
+  const version = dir.split('-').pop()
   return new Promise((resolve, reject) => {
     yauzl.open(zip, { lazyEntries: true }, (err, zipfile) => {
       if (err) {
@@ -126,7 +130,9 @@ function unzip(zip, dest) {
         })
         .on("end", () => {
           VERBOSE && console.log("Extracted all files");
-          fs.writeFileSync(path.resolve(dest, "DONE"), "");
+          fs.readdirSync(dest).filter(file => file.startsWith('DONE')).forEach(doneFile => 
+            fs.rmSync(path.resolve(dest,doneFile)))
+          fs.writeFileSync(path.resolve(dest, `DONE ${version}`), "");
         })
         .on("close", () => {
           resolve();
